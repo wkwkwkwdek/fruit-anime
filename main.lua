@@ -1,9 +1,10 @@
--- ✅ Anime Fruit GUI v3: Full Dungeon Support + Floating AutoFarm + Brutal Skill Spam + Stage Loop
+-- ✅ Anime Fruit OP Auto Dungeon | July 2025
+-- 💥 Floating Brutal Attack + Skill + Stage Loop
 
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local VirtualInput = game:GetService("VirtualInputManager")
+local RS = game:GetService("ReplicatedStorage")
+local WS = game:GetService("Workspace")
+local VIM = game:GetService("VirtualInputManager")
 local UIS = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
@@ -12,12 +13,13 @@ player.CharacterAdded:Connect(function(c) char = c end)
 
 local Settings = {
     AutoFarm = false,
-    SafeMode = true,
     LoopDungeon = false,
-    DelayBetweenStages = 2,
-    SelectedDungeon = "Hell Dungeon"
+    SafeMode = true,
+    SelectedDungeon = "Hell Dungeon",
+    DelayBetweenStages = 2
 }
 
+-- 🧱 Dungeon List
 local DungeonList = {
     "Hell Dungeon",
     "Sky Dungeon",
@@ -25,19 +27,19 @@ local DungeonList = {
     "Ice Dungeon"
 }
 
+-- 🛡️ NoClip (Safe Mode)
 local function applyNoClip()
     if not char then return end
     for _, part in ipairs(char:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = false
-        end
+        if part:IsA("BasePart") then part.CanCollide = false end
     end
 end
 
+-- 🔁 Auto Start Dungeon
 spawn(function()
     while task.wait(5) do
         if Settings.LoopDungeon then
-            local remote = ReplicatedStorage:FindFirstChild("Remotes")
+            local remote = RS:FindFirstChild("Remotes")
             if remote and remote:FindFirstChild("StartDungeon") then
                 remote.StartDungeon:FireServer()
             end
@@ -45,14 +47,13 @@ spawn(function()
     end
 end)
 
-local function getDungeonMobs()
+-- 🔍 Ambil Mobs (di Dungeon)
+local function getMobs()
     local mobs = {}
-    local mobFolder = Workspace:FindFirstChild("Monsters")
+    local mobFolder = WS:FindFirstChild("Monsters")
     if mobFolder then
         for _, mob in ipairs(mobFolder:GetChildren()) do
-            local hum = mob:FindFirstChildWhichIsA("Humanoid")
-            local hrp = mob:FindFirstChild("HumanoidRootPart")
-            if hum and hrp and hum.Health > 0 then
+            if mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 and mob:FindFirstChild("HumanoidRootPart") then
                 table.insert(mobs, mob)
             end
         end
@@ -60,8 +61,9 @@ local function getDungeonMobs()
     return mobs
 end
 
+-- 🚪 Pindah ke Stage Selanjutnya
 local function goToNextStage()
-    local portals = Workspace:FindFirstChild("Portals") or Workspace:FindFirstChild("Stages")
+    local portals = WS:FindFirstChild("Portals") or WS:FindFirstChild("Stages")
     if portals then
         for _, obj in ipairs(portals:GetChildren()) do
             if obj:IsA("BasePart") and obj.Name:lower():find("portal") then
@@ -75,28 +77,32 @@ local function goToNextStage()
     end
 end
 
+-- 🎯 Auto Attack Loop
 spawn(function()
-    while task.wait(0.15) do
+    while task.wait(0.1) do
         if Settings.AutoFarm and char and char:FindFirstChild("HumanoidRootPart") then
             if Settings.SafeMode then applyNoClip() end
-            local mobs = getDungeonMobs()
+            local mobs = getMobs()
             if #mobs > 0 then
                 local mob = mobs[1]
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                local target = mob:FindFirstChild("HumanoidRootPart")
-                if hrp and target then
-                    hrp.CFrame = target.CFrame + Vector3.new(0, 25, 0)
-                    local keys = {
-                        Enum.KeyCode.One, Enum.KeyCode.Two,
-                        Enum.KeyCode.Three, Enum.KeyCode.Four
-                    }
-                    for _ = 1, 3 do -- Brutal spam
-                        for _, key in ipairs(keys) do
-                            VirtualInput:SendKeyEvent(true, key, false, game)
-                            task.wait(0.02)
-                            VirtualInput:SendKeyEvent(false, key, false, game)
-                        end
-                        task.wait(0.1)
+                local mobHRP = mob:FindFirstChild("HumanoidRootPart")
+                if mobHRP then
+                    local hrp = char:FindFirstChild("HumanoidRootPart")
+                    hrp.Velocity = Vector3.zero
+                    hrp.CFrame = mobHRP.CFrame + Vector3.new(0, 15, 0)
+
+                    -- Auto Skill
+                    for _, key in ipairs({Enum.KeyCode.One, Enum.KeyCode.Two, Enum.KeyCode.Three, Enum.KeyCode.Four}) do
+                        VIM:SendKeyEvent(true, key, false, game)
+                        task.wait(0.05)
+                        VIM:SendKeyEvent(false, key, false, game)
+                    end
+
+                    -- Serangan Brutal (Spam Click Mouse)
+                    for i = 1, 3 do
+                        VIM:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                        task.wait(0.01)
+                        VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
                     end
                 end
             else
@@ -107,11 +113,12 @@ spawn(function()
     end
 end)
 
+-- 🖥️ GUI
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 250, 0, 250)
-frame.Position = UDim2.new(0, 20, 0.5, -125)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.Size = UDim2.new(0, 250, 0, 260)
+frame.Position = UDim2.new(0, 20, 0.5, -130)
+frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 frame.BorderSizePixel = 0
 
 local function addToggle(name, key, y)
@@ -175,10 +182,11 @@ addToggle("Loop Dungeon", "LoopDungeon", 50)
 addToggle("Safe Mode", "SafeMode", 90)
 addDropdown("Dungeon", "SelectedDungeon", DungeonList, 130)
 
+-- 🔄 GUI Toggle (RightShift)
 UIS.InputBegan:Connect(function(key, g)
     if not g and key.KeyCode == Enum.KeyCode.RightShift then
         gui.Enabled = not gui.Enabled
     end
 end)
 
-print("✅ Anime Fruit GUI loaded with brutal attack spam and anti-fall floating!")
+print("✅ Anime Fruit Dungeon Script Loaded!")
