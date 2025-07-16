@@ -53,7 +53,7 @@ local function getEnemies()
 end
 
 -- 💥 Brutal click spam (seolah mouse diklik 100x)
-local function brutalAutoAttack()
+local function brutalAutoAttack(50)
     for _ = 1, Settings.BrutalMultiplier do
         VirtualInput:SendMouseButtonEvent(0, 0, 0, true, game)
         VirtualInput:SendMouseButtonEvent(0, 0, 0, false, game)
