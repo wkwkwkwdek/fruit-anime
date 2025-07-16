@@ -1,5 +1,5 @@
--- ✅ Anime Fruit Simulator OP Script with Full GUI (Updated July 2025)
--- ⚠️ DISCLAIMER: Gunakan untuk pembelajaran. Resiko tanggung sendiri.
+-- ✅ Anime Fruit Simulator OP Script with Full GUI (Final Fixed Version - July 2025)
+-- ⚠️ DISCLAIMER: Gunakan untuk edukasi. Risiko tanggung sendiri.
 -- 🛑 Jangan gunakan script ini untuk merugikan pemain lain.
 
 -- 📌 FITUR:
@@ -10,20 +10,16 @@
 -- [✔] Auto Fruit/Drop Collect
 -- [✔] GUI Toggle Friendly
 
--- ✅ Struktur game berdasarkan inspeksi langsung dari game:
---   workspace.Mobs         : kumpulan musuh
---   workspace.Boss         : 1 boss model
---   workspace.Drops        : buah atau item
---   ReplicatedStorage.Remotes.Skill : serangan
---   ReplicatedStorage.Remotes.Quest : ambil quest
-
 ---------------------------------------------------------------------
 
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
 local WS = game:GetService("Workspace")
 local player = Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
+
+repeat wait() until player.Character and player:FindFirstChild("PlayerGui")
+local char = player.Character
+player.CharacterAdded:Connect(function(c) char = c end)
 
 -- ⛔ Anti AFK
 local vu = game:GetService("VirtualUser")
@@ -143,4 +139,4 @@ createToggle("AutoSkill", 2)
 createToggle("AutoBoss", 3)
 createToggle("AutoFruit", 4)
 
-print("✅ Anime Fruit GUI loaded. Aktifkan fitur lewat tombol GUI.")
+print("✅ GUI Loaded! Aktifkan fitur lewat tombol GUI di kiri layar!")
