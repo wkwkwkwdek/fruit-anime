@@ -17,7 +17,7 @@ local RS = game:GetService("ReplicatedStorage")
 local WS = game:GetService("Workspace")
 local player = Players.LocalPlayer
 
-repeat wait() until player.Character and player:FindFirstChild("PlayerGui")
+repeat wait() until player.Character and game:GetService("CoreGui")
 local char = player.Character
 player.CharacterAdded:Connect(function(c) char = c end)
 
