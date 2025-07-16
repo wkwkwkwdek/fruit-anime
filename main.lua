@@ -1,135 +1,126 @@
--- 🚀 Anime Fruit AutoFarm v3 – Brutal Basic Attack + Hover + Stage Loop
+-- ⚔️ Anime Fruit Dungeon AutoFarm v4
+-- ✅ Hover Anti-Hit + Brutal Damage Spam (Tanpa Mouse Click)
+-- 🌀 Fitur: AutoFarm, Hover, Auto Stage, Brutal Click, GUI Toggle
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local VirtualInput = game:GetService("VirtualInputManager")
-local UIS = game:GetService("UserInputService")
-
 local player = Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 player.CharacterAdded:Connect(function(c) char = c end)
 
--- Settings
 local Settings = {
     AutoFarm = false,
-    LoopStage = false,
-    SafeMode = true,
+    LoopStage = true,
+    BrutalMultiplier = 100,
 }
 
--- Hover: guna BodyVelocity stabil
-local function hoverOn()
+-- 🛸 Hover di atas mobs agar tidak tersentuh
+local function startHover(targetPos)
     local hrp = char:FindFirstChild("HumanoidRootPart")
-    if hrp and not hrp:FindFirstChild("AF_Hover") then
-        local bv = Instance.new("BodyVelocity")
-        bv.Name = "AF_Hover"
-        bv.MaxForce = Vector3.new(0,1e5,0)
-        bv.Velocity = Vector3.new(0,50,0)
-        bv.Parent = hrp
-    end
+    if not hrp then return end
+    local bp = hrp:FindFirstChild("HoverBP") or Instance.new("BodyPosition")
+    bp.Name = "HoverBP"
+    bp.MaxForce = Vector3.new(0, 1e6, 0)
+    bp.P = 5000
+    bp.D = 1000
+    bp.Position = targetPos + Vector3.new(0, 20, 0)
+    bp.Parent = hrp
 end
-local function hoverOff()
+
+local function stopHover()
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if hrp then
-        local bv = hrp:FindFirstChild("AF_Hover")
-        if bv then bv:Destroy() end
+        local bp = hrp:FindFirstChild("HoverBP")
+        if bp then bp:Destroy() end
     end
 end
 
--- Deteksi musuh/hidup
+-- 🎯 Deteksi mobs hidup
 local function getEnemies()
-    local out = {}
+    local enemies = {}
     local folder = Workspace:FindFirstChild("Monsters")
     if folder then
         for _, mob in ipairs(folder:GetChildren()) do
             local hum = mob:FindFirstChildOfClass("Humanoid")
             local root = mob:FindFirstChild("HumanoidRootPart")
             if hum and root and hum.Health > 0 then
-                table.insert(out, mob)
+                table.insert(enemies, mob)
             end
         end
     end
-    return out
+    return enemies
 end
 
--- Brutal basic click attack
-local function clickAttack()
-    VirtualInput:SendMouseButtonEvent(0,0,0,true,game)
-    VirtualInput:SendMouseButtonEvent(0,0,0,false,game)
+-- 💥 Brutal click spam (seolah mouse diklik 100x)
+local function brutalAutoAttack()
+    for _ = 1, Settings.BrutalMultiplier do
+        VirtualInput:SendMouseButtonEvent(0, 0, 0, true, game)
+        VirtualInput:SendMouseButtonEvent(0, 0, 0, false, game)
+        task.wait()
+    end
 end
 
--- Auto attack & hover loop
-task.spawn(function()
-    while task.wait(0.1) do
+-- 🚪 Auto lanjut stage
+local function goToNextStage()
+    local stage = Workspace:FindFirstChild("Portals") or Workspace:FindFirstChild("Stages")
+    if stage then
+        for _, p in pairs(stage:GetChildren()) do
+            if p:IsA("BasePart") and p.Name:lower():find("portal") then
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                if hrp then hrp.CFrame = p.CFrame + Vector3.new(0, 5, 0) end
+                break
+            end
+        end
+    end
+end
+
+-- 🔁 Main Loop
+spawn(function()
+    while task.wait(0.15) do
         if Settings.AutoFarm and char then
-            if Settings.SafeMode then hoverOn() end
-
             local enemies = getEnemies()
             if #enemies > 0 then
-                local hrp = char:FindFirstChild("HumanoidRootPart")
                 local mob = enemies[1]
                 local root = mob:FindFirstChild("HumanoidRootPart")
-                if hrp and root then
-                    -- hover atas musuh (offset 25)
-                    hrp.CFrame = root.CFrame + Vector3.new(0,25,0)
-                    -- spam click
-                    for i=1, 6 do
-                        clickAttack()
-                        task.wait(0.05)
-                    end
+                if root then
+                    startHover(root.Position)
+                    brutalAutoAttack()
                 end
             else
-                hoverOff()
+                stopHover()
                 if Settings.LoopStage then
-                    -- lanjut ke portal jika ada
-                    local pFolder = Workspace:FindFirstChild("Portals") or Workspace:FindFirstChild("Stages")
-                    if pFolder then
-                        for _, p in ipairs(pFolder:GetChildren()) do
-                            if p:IsA("BasePart") and p.Name:lower():find("portal") then
-                                char:FindFirstChild("HumanoidRootPart").CFrame = p.CFrame + Vector3.new(0,5,0)
-                                break
-                            end
-                        end
-                    end
+                    goToNextStage()
                 end
             end
         else
-            hoverOff()
+            stopHover()
         end
     end
 end)
 
--- GUI
+-- 🖥️ GUI
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0,200,0,140)
-frame.Position = UDim2.new(0,20,0,150)
-frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+frame.Size = UDim2.new(0, 200, 0, 140)
+frame.Position = UDim2.new(0, 10, 0, 300)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 
-local function makeToggle(lbl, key, y)
+local function addToggle(name, key, y)
     local btn = Instance.new("TextButton", frame)
-    btn.Size = UDim2.new(0,180,0,30)
-    btn.Position = UDim2.new(0,10,0,y)
-    btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    btn.Size = UDim2.new(0, 180, 0, 30)
+    btn.Position = UDim2.new(0, 10, 0, y)
+    btn.Text = name .. ": OFF"
     btn.TextColor3 = Color3.new(1,1,1)
-    btn.Font = Enum.Font.Gotham
-    btn.TextSize = 14
-    btn.Text = lbl..": OFF"
-
+    btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
     btn.MouseButton1Click:Connect(function()
         Settings[key] = not Settings[key]
-        btn.Text = lbl..(Settings[key] and ": ON" or ": OFF")
+        btn.Text = name .. (Settings[key] and ": ON" or ": OFF")
         btn.BackgroundColor3 = Settings[key] and Color3.fromRGB(0,170,0) or Color3.fromRGB(60,60,60)
     end)
 end
 
-makeToggle("AutoFarm", "AutoFarm", 10)
-makeToggle("LoopStage", "LoopStage", 50)
-makeToggle("SafeMode", "SafeMode", 90)
+addToggle("Auto Farm", "AutoFarm", 10)
+addToggle("Loop Stage", "LoopStage", 50)
 
-UIS.InputBegan:Connect(function(i,g)
-    if not g and i.KeyCode == Enum.KeyCode.RightShift then
-        gui.Enabled = not gui.Enabled
-    end
-end)
-
-print("✅ Brutal AutoFarm loaded. Use basic click, hover & stage loop!")
+print("✅ Brutal Hover AutoFarm loaded")
