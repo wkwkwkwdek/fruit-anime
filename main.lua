@@ -17,7 +17,7 @@ local RS = game:GetService("ReplicatedStorage")
 local WS = game:GetService("Workspace")
 local player = Players.LocalPlayer
 
-repeat wait() until player.Character and game:GetService("CoreGui")
+repeat wait() until player.Character
 local char = player.Character
 player.CharacterAdded:Connect(function(c) char = c end)
 
@@ -115,11 +115,11 @@ spawn(function()
     end
 end)
 
--- 🎛️ GUI Interface
+-- 🎛️ GUI Interface (CoreGui for compatibility)
 local gui = Instance.new("ScreenGui")
 gui.Name = "AFS_OP_GUI"
 gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
+pcall(function() gui.Parent = game:GetService("CoreGui") end)
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 200, 0, 240)
@@ -149,4 +149,13 @@ createToggle("AutoSkill", 2)
 createToggle("AutoBoss", 3)
 createToggle("AutoFruit", 4)
 
-print("✅ GUI Loaded! Aktifkan fitur lewat tombol GUI di kiri layar!")
+local notif = Instance.new("TextLabel", gui)
+notif.Size = UDim2.new(0, 300, 0, 30)
+notif.Position = UDim2.new(0.5, -150, 0, 20)
+notif.BackgroundTransparency = 1
+notif.TextColor3 = Color3.new(0, 1, 0)
+notif.Text = "✅ Anime Fruit GUI Aktif!"
+notif.Font = Enum.Font.SourceSansBold
+notif.TextSize = 20
+
+print("✅ GUI Loaded ke CoreGui! Aktifkan fitur lewat tombol GUI di kiri layar!")
