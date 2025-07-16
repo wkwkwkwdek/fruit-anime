@@ -38,31 +38,41 @@ local Settings = {
     AutoFruit = false
 }
 
--- 🌀 Auto Skill
+-- 🌀 Auto Skill (Safe Version)
 spawn(function()
     while wait(0.3) do
-        if Settings.AutoSkill and RS:FindFirstChild("Remotes") then
-            for i = 1, 4 do
-                local skill = RS.Remotes:FindFirstChild("Skill")
-                if skill then
-                    skill:FireServer("Skill"..i)
+        if Settings.AutoSkill then
+            local ok, err = pcall(function()
+                if RS:FindFirstChild("Remotes") then
+                    for i = 1, 4 do
+                        local skill = RS.Remotes:FindFirstChild("Skill")
+                        if skill then
+                            skill:FireServer("Skill"..i)
+                        end
+                    end
                 end
-            end
+            end)
+            if not ok then warn("AutoSkill error: ", err) end
         end
     end
 end)
 
--- 🗡️ Auto Farm (Mob)
+-- 🗡️ Auto Farm (Safe Version)
 spawn(function()
     while wait(0.5) do
-        if Settings.AutoFarm and WS:FindFirstChild("Mobs") then
-            for _, mob in ipairs(WS.Mobs:GetChildren()) do
-                local h = mob:FindFirstChild("Humanoid")
-                local hrp = mob:FindFirstChild("HumanoidRootPart")
-                if h and hrp and h.Health > 0 then
-                    char:WaitForChild("HumanoidRootPart").CFrame = hrp.CFrame + Vector3.new(0, 10, 0)
+        if Settings.AutoFarm then
+            local ok, err = pcall(function()
+                if WS:FindFirstChild("Mobs") then
+                    for _, mob in ipairs(WS.Mobs:GetChildren()) do
+                        local h = mob:FindFirstChild("Humanoid")
+                        local hrp = mob:FindFirstChild("HumanoidRootPart")
+                        if h and hrp and h.Health > 0 then
+                            char:WaitForChild("HumanoidRootPart").CFrame = hrp.CFrame + Vector3.new(0, 10, 0)
+                        end
+                    end
                 end
-            end
+            end)
+            if not ok then warn("AutoFarm error: ", err) end
         end
     end
 end)
