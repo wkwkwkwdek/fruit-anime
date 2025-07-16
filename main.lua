@@ -9,7 +9,6 @@ local WS = game:GetService("Workspace")
 local Vim = game:GetService("VirtualInputManager")
 local UserInput = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
-local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 
@@ -37,18 +36,18 @@ local Settings = {
 
 -- 🌀 Auto Skill (1–4)
 task.spawn(function()
-    while task.wait(0.5) do
-        if Settings.AutoSkill then
+    while task.wait(1) do
+        if Settings.AutoFarm or Settings.AutoSkill then
             for _, key in ipairs({Enum.KeyCode.One, Enum.KeyCode.Two, Enum.KeyCode.Three, Enum.KeyCode.Four}) do
                 Vim:SendKeyEvent(true, key, false, game)
-                task.wait(0.05)
+                task.wait(0.1)
                 Vim:SendKeyEvent(false, key, false, game)
             end
         end
     end
 end)
 
--- 🗡️ Auto Farm Mobs + Melayang
+-- 🗡️ Auto Farm Mobs + Melayang + Auto Skill Attack
 task.spawn(function()
     while task.wait(0.5) do
         if Settings.AutoFarm and char and char:FindFirstChild("HumanoidRootPart") then
@@ -56,7 +55,19 @@ task.spawn(function()
             if mobs then
                 for _, mob in ipairs(mobs:GetChildren()) do
                     if mob:FindFirstChild("Humanoid") and mob:FindFirstChild("HumanoidRootPart") and mob.Humanoid.Health > 0 then
-                        char.HumanoidRootPart.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0, 20, 0)
+                        local mobHRP = mob.HumanoidRootPart
+                        local hrp = char:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            hrp.CFrame = mobHRP.CFrame * CFrame.new(0, 25, 0) -- Melayang di atas mob
+                            task.wait(0.2)
+
+                            -- Serangan menggunakan skill (jika dimiliki)
+                            for _, key in ipairs({Enum.KeyCode.One, Enum.KeyCode.Two, Enum.KeyCode.Three, Enum.KeyCode.Four}) do
+                                Vim:SendKeyEvent(true, key, false, game)
+                                task.wait(0.1)
+                                Vim:SendKeyEvent(false, key, false, game)
+                            end
+                        end
                         break
                     end
                 end
@@ -68,10 +79,17 @@ end)
 -- 👑 Auto Boss
 task.spawn(function()
     while task.wait(1) do
-        if Settings.AutoBoss then
+        if Settings.AutoBoss and char and char:FindFirstChild("HumanoidRootPart") then
             local boss = WS:FindFirstChild("Boss")
             if boss and boss:FindFirstChild("HumanoidRootPart") and boss:FindFirstChild("Humanoid") and boss.Humanoid.Health > 0 then
-                char.HumanoidRootPart.CFrame = boss.HumanoidRootPart.CFrame * CFrame.new(0, 20, 0)
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                hrp.CFrame = boss.HumanoidRootPart.CFrame * CFrame.new(0, 25, 0)
+                task.wait(0.2)
+                for _, key in ipairs({Enum.KeyCode.One, Enum.KeyCode.Two, Enum.KeyCode.Three, Enum.KeyCode.Four}) do
+                    Vim:SendKeyEvent(true, key, false, game)
+                    task.wait(0.1)
+                    Vim:SendKeyEvent(false, key, false, game)
+                end
             end
         end
     end
